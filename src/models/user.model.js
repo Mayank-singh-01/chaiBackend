@@ -50,6 +50,9 @@ const userSchema = new Schema({
   }
 )
 
+
+// .pre is like middlewere for the models
+
 userSchema.pre("save", async function (next) {
    if(!this.isModified("password")) return next();
 
