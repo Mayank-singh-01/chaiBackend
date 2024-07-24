@@ -100,7 +100,7 @@ const registerUser = asyncHandler( async (req,res)=>{
 
 } );
 
-const loginUser = asyncHandler( async (req,res) => {
+const logInUser = asyncHandler( async (req,res) => {
    //req body -> data 
    //username or email
    //find the user 
@@ -111,9 +111,14 @@ const loginUser = asyncHandler( async (req,res) => {
 
    const { email,username,password } = req.body
 
-   if (!username || !email) {
-      throw new ApiError(400,"Username or email is required");
+
+   if (!username && !email) {
+     throw new ApiError(400, "username or email is required");
    }
+
+   // if (!username || !email) {
+   //    throw new ApiError(400,"Username or email is required");
+   // }
 
    const user = await User.findOne({
       $or: [{username},{email}]
@@ -134,6 +139,7 @@ const loginUser = asyncHandler( async (req,res) => {
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
+    //no access on frentend to modiefy 
      const options = {
        httpOnly: true,
        secure: true,
@@ -157,6 +163,32 @@ const loginUser = asyncHandler( async (req,res) => {
 
 } )
 
-export { registerUser, loginUser };
+
+const logOutUser = asyncHandler( async (req,res) => {
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $unset: {
+          refreshToken: 1, // this removes the field from document
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new ApiResponse(200, {}, "User logged Out"));
+})
+
+export { registerUser, logInUser, logOutUser };
 
 
