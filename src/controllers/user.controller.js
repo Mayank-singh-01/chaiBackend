@@ -23,7 +23,6 @@ const generateAccessTokenAndRefreshToken = async(userId) => {
 }
 
 
-
 const registerUser = asyncHandler( async (req,res)=>{
    // get user details from frontend 
    // validation - not empty 
@@ -100,6 +99,7 @@ const registerUser = asyncHandler( async (req,res)=>{
     )
 
 } );
+
 
 const logInUser = asyncHandler( async (req,res) => {
    //req body -> data 
@@ -240,6 +240,30 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 
-export { registerUser, logInUser, logOutUser, refreshAccessToken };
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user?._id);
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+
+export { registerUser, 
+   logInUser, 
+   logOutUser, 
+   refreshAccessToken,
+   changeCurrentPassword,
+ };
 
 
