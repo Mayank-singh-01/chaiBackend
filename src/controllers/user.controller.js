@@ -196,16 +196,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     req.cookies.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
-    throw new ApiError(401, "unauthorized request");
+    throw new ApiError(401, "unauthorized request");   //token taken
   }
 
   try {
-    const decodedToken = jwt.verify(
+    const decodedToken = jwt.verify(                  //token decoded
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
 
-    const user = await User.findById(decodedToken?._id);
+    const user = await User.findById(decodedToken?._id);    //took user data
 
     if (!user) {
       throw new ApiError(401, "Invalid refresh token");
